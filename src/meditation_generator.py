@@ -371,7 +371,7 @@ class MeditationGenerator:
         text_frame = ttk.LabelFrame(main_frame, text="Meditation Script", padding=15)
         text_frame.pack(fill='both', expand=True, pady=(0, 15))
         
-        ttk.Label(text_frame, text="Enter your meditation text (use [PAUSE:X] for X second pauses):", style='Custom.TLabel').pack(anchor='w')
+        ttk.Label(text_frame, text="Enter your meditation text (use [pause:X] for X second pauses):", style='Custom.TLabel').pack(anchor='w')
         
         # Text area with scrollbar
         self.text_area = scrolledtext.ScrolledText(
@@ -486,9 +486,9 @@ class MeditationGenerator:
         segments = []
         current_pos = 0
         
-        # Find all pause markers
-        pause_pattern = r'\[PAUSE:(\d+)\]'
-        matches = list(re.finditer(pause_pattern, text))
+        # Find all pause markers (case-insensitive, flexible spacing)
+        pause_pattern = r'\[pause\s*:\s*(\d+)\s*\]'
+        matches = list(re.finditer(pause_pattern, text, re.IGNORECASE))
         
         for match in matches:
             # Add text before pause
