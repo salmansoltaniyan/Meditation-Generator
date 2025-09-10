@@ -1,0 +1,13 @@
+name: meditation_generator
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - ffmpeg
+  - pip
+  - pip:
+    - pyttsx3==2.90
+    - pygame==2.5.2
+    - pydub==0.25.1
+    - gtts==2.5.4
