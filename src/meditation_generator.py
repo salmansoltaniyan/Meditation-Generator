@@ -21,8 +21,9 @@ class MeditationGenerator:
     def __init__(self, root):
         self.root = root
         self.root.title("Guided Meditation Generator")
-        self.root.geometry("800x700")
+        self.root.geometry("800x900")  # Increased height from 700 to 900
         self.root.configure(bg='#2E3440')
+        self.root.minsize(800, 850)  # Set minimum size to prevent too small window
         
         # Initialize TTS engine
         try:
@@ -346,7 +347,7 @@ class MeditationGenerator:
         style.configure('Custom.TButton', font=('Arial', 10))
         
         # Main title
-        title_label = ttk.Label(self.root, text="🧘 Guided Meditation Generator", style='Title.TLabel')
+        title_label = ttk.Label(self.root, text="Guided Meditation Generator", style='Title.TLabel')
         title_label.pack(pady=(20, 30))
         
         # Create main frame with padding
@@ -373,11 +374,11 @@ class MeditationGenerator:
         
         ttk.Label(text_frame, text="Enter your meditation text (use [pause:X] for X second pauses):", style='Custom.TLabel').pack(anchor='w')
         
-        # Text area with scrollbar
+        # Text area with scrollbar (reduced height to fit all controls)
         self.text_area = scrolledtext.ScrolledText(
             text_frame, 
             wrap=tk.WORD, 
-            height=12, 
+            height=10, 
             font=('Arial', 11),
             bg='#3B4252',
             fg='#ECEFF4',
@@ -387,19 +388,129 @@ class MeditationGenerator:
         )
         self.text_area.pack(fill='both', expand=True, pady=(5, 0))
         
-        # Load sample text from samples folder (only if it exists)
-        sample_file = Path("samples/sample_meditation.txt")
-        if sample_file.exists():
-            try:
-                with open(sample_file, 'r', encoding='utf-8') as f:
-                    sample_text = f.read()
-                self.text_area.insert('1.0', sample_text)
-                print(f"✅ Loaded sample meditation from {sample_file}")
-            except Exception as e:
-                print(f"⚠️ Could not load sample file: {e}")
-                # Don't insert anything if sample file fails to load
-        else:
-            print("ℹ️ No sample meditation file found - starting with empty text area")
+        # Load sample meditation text (inline)
+        sample_text = """Welcome.
+Find a comfortable position, either seated or lying down.
+Allow your body to settle.
+Close your eyes gently.
+[PAUSE:5]
+
+Take a slow, deep breath in through the nose.
+Let the breath travel all the way down into the belly.
+[PAUSE:4]
+
+Exhale slowly through the mouth, releasing any tension.
+[PAUSE:5]
+
+Again—inhale slowly through the nose.
+Feel the chest rise.
+Feel the belly expand.
+[PAUSE:4]
+
+Exhale gently, letting the body soften.
+[PAUSE:6]
+
+Now, allow your breathing to find its natural rhythm.
+Simply notice each inhale[EMOJI]
+and each exhale.
+[PAUSE:8]
+
+As you breathe in, feel the coolness of the air at the tip of your nose.
+As you breathe out, notice the warmth leaving your body.
+[PAUSE:8]
+
+Your breath is an anchor.
+Always here.
+Always steady.
+[PAUSE:8]
+
+If thoughts arise, let them drift by—like clouds in the sky.
+Gently return your attention to the breath.
+Inhale…
+Exhale…
+[PAUSE:10]
+
+Feel the body supported by the ground beneath you.
+No need to hold on to anything.
+Just breathing.
+Just being.
+[PAUSE:10]
+
+Notice the slight pause at the top of each inhale.
+A stillness…
+a space.
+[PAUSE:6]
+
+Notice the pause at the end of each exhale.
+Another space.
+Another moment of quiet.
+[PAUSE:8]
+
+Breathing in—new energy enters the body.
+Breathing out—release, and let go.
+[PAUSE:10]
+
+Now, bring your attention to the rise and fall of the belly.
+With each inhale, the belly expands.
+With each exhale, it softens.
+[PAUSE:8]
+
+Stay with this gentle rhythm.
+Breathing in calm…
+Breathing out ease.
+[PAUSE:12]
+
+If the mind wanders, it's okay.
+Softly bring it back to the breath.
+Inhale…
+Exhale…
+[PAUSE:12]
+
+Let your breath slow even more.
+Inhale… count silently to four.
+One… two… three… four.
+[PAUSE:4]
+
+Exhale… count silently to six.
+One… two… three… four… five… six.
+[PAUSE:6]
+
+Continue this rhythm for a few rounds.
+[PAUSE:20]
+
+Now, let go of the counting.
+Return to simply watching the breath.
+Natural.
+Effortless.
+[PAUSE:12]
+
+Feel the body at ease.
+The mind calm.
+The breath steady.
+[PAUSE:12]
+
+Take a final deep breath in—filling the lungs completely.
+Hold it for a moment.
+[PAUSE:4]
+
+And exhale fully, releasing everything.
+[PAUSE:8]
+
+When you're ready, gently wiggle your fingers and toes.
+Slowly bring awareness back to your surroundings.
+[PAUSE:6]
+
+Take one last soft breath in…
+and out.
+[PAUSE:6]
+
+When it feels right, open your eyes.
+Your meditation is complete.
+[PAUSE:4]"""
+        
+        # Insert the sample text into the text area
+        self.text_area.insert('1.0', sample_text)
+        print("✅ Loaded inline sample meditation text")
         
         # Voice settings
         voice_frame = ttk.LabelFrame(main_frame, text="Voice Settings", padding=15)
@@ -424,35 +535,66 @@ class MeditationGenerator:
         self.voice_combo = ttk.Combobox(voice_select_frame, textvariable=self.voice_var, state='readonly', width=40)
         self.voice_combo.pack(side='left', padx=(10, 10))
         
-        ttk.Button(voice_select_frame, text="🎤 Test Voice", command=self.test_selected_voice, style='Custom.TButton').pack(side='left')
+        ttk.Button(voice_select_frame, text="Test Voice", command=self.test_selected_voice, style='Custom.TButton').pack(side='left')
         
         # Populate engine and voice options
         self.populate_engine_options()
         self.populate_voice_options()
         
+        # TTS Voice Controls Section
         voice_controls = ttk.Frame(voice_frame)
-        voice_controls.pack(fill='x')
+        voice_controls.pack(fill='x', pady=(10, 0))
         
-        # Speech rate
-        ttk.Label(voice_controls, text="Speech Rate:", style='Custom.TLabel').pack(side='left')
+        # Add a separator line for clarity
+        separator = ttk.Separator(voice_frame, orient='horizontal')
+        separator.pack(fill='x', pady=(5, 10))
+        
+        # Speech rate with clear labeling
+        rate_frame = ttk.Frame(voice_controls)
+        rate_frame.pack(side='left', padx=(0, 30))
+        
+        ttk.Label(rate_frame, text="Voice Speech Rate (WPM):", style='Custom.TLabel').pack(anchor='w')
         self.rate_var = tk.IntVar(value=120)  # Slower default for meditation
-        rate_scale = ttk.Scale(voice_controls, from_=80, to=200, variable=self.rate_var, orient='horizontal', length=150)
-        rate_scale.pack(side='left', padx=(10, 20))
+        rate_scale = ttk.Scale(rate_frame, from_=80, to=200, variable=self.rate_var, orient='horizontal', length=150)
+        rate_scale.pack(pady=(2, 0))
         
-        # Volume
-        ttk.Label(voice_controls, text="Volume:", style='Custom.TLabel').pack(side='left')
+        # Rate value display
+        self.rate_display = ttk.Label(rate_frame, text="120 WPM", style='Custom.TLabel')
+        self.rate_display.pack()
+        
+        # Update rate display when slider changes
+        def update_rate_display(value):
+            val = int(float(value))
+            self.rate_display.config(text=f"{val} WPM")
+        rate_scale.configure(command=update_rate_display)
+        
+        # Volume with clear labeling
+        volume_frame = ttk.Frame(voice_controls)
+        volume_frame.pack(side='left')
+        
+        ttk.Label(volume_frame, text="Voice Volume Level:", style='Custom.TLabel').pack(anchor='w')
         self.volume_var = tk.DoubleVar(value=0.85)  # Softer default
-        volume_scale = ttk.Scale(voice_controls, from_=0.1, to=1.0, variable=self.volume_var, orient='horizontal', length=150)
-        volume_scale.pack(side='left', padx=(10, 0))
+        volume_scale = ttk.Scale(volume_frame, from_=0.1, to=1.0, variable=self.volume_var, orient='horizontal', length=150)
+        volume_scale.pack(pady=(2, 0))
+        
+        # Volume value display
+        self.volume_display = ttk.Label(volume_frame, text="85%", style='Custom.TLabel')
+        self.volume_display.pack()
+        
+        # Update volume display when slider changes
+        def update_volume_display(value):
+            val = int(float(value) * 100)
+            self.volume_display.config(text=f"{val}%")
+        volume_scale.configure(command=update_volume_display)
         
         # Control buttons
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill='x', pady=(0, 10))
         
-        self.generate_btn = ttk.Button(button_frame, text="🎵 Create Meditation File", command=self.generate_meditation, style='Custom.TButton')
+        self.generate_btn = ttk.Button(button_frame, text="Create Meditation File", command=self.generate_meditation, style='Custom.TButton')
         self.generate_btn.pack(side='left', padx=(0, 10))
         
-        self.stop_btn = ttk.Button(button_frame, text="⏹ Cancel", command=self.stop_meditation, style='Custom.TButton', state='disabled')
+        self.stop_btn = ttk.Button(button_frame, text="Cancel", command=self.stop_meditation, style='Custom.TButton', state='disabled')
         self.stop_btn.pack(side='left', padx=(0, 10))
         
         # Progress bar
@@ -579,6 +721,12 @@ class MeditationGenerator:
             # Get voice settings from selection
             selected_voice = self.voice_var.get()
             
+            # Get rate and volume from sliders
+            rate_setting = self.rate_var.get()
+            volume_setting = self.volume_var.get()
+            
+            print(f"🎛️ TTS Settings from sliders: Rate={rate_setting} WPM, Volume={volume_setting:.1f}")
+            
             # Determine language and slow setting based on voice selection
             if "British" in selected_voice:
                 lang = 'en'
@@ -599,9 +747,11 @@ class MeditationGenerator:
                 lang = 'en'
                 tld = 'com'  # Default to US English
             
-            slow = "Slow" in selected_voice or "Female" in selected_voice
+            # Determine slow setting based on both voice selection AND rate slider
+            # If rate is below 150 WPM, use slow speech
+            slow = ("Slow" in selected_voice or "Female" in selected_voice) or (rate_setting < 150)
             
-            print(f"🌐 Using Google TTS: lang={lang}, tld={tld}, slow={slow}")
+            print(f"🌐 Using Google TTS: lang={lang}, tld={tld}, slow={slow} (based on rate={rate_setting})")
             
             # Create TTS
             tts = gTTS(text=text, lang=lang, slow=slow, tld=tld)
@@ -613,10 +763,41 @@ class MeditationGenerator:
             
             tts.save(temp_mp3)
             
-            # Convert MP3 to WAV using pydub if available
+            # Convert MP3 to WAV and adjust volume using pydub if available
             try:
                 from pydub import AudioSegment
                 audio = AudioSegment.from_mp3(temp_mp3)
+                
+                # Adjust speed based on rate slider setting
+                # Convert rate (80-200 WPM) to speed multiplier
+                # 120 WPM (default) = 1.0x speed, lower = slower, higher = faster
+                default_rate = 120  # Default meditation rate
+                if rate_setting != default_rate:
+                    # Calculate speed multiplier (0.5x to 1.8x)
+                    speed_multiplier = rate_setting / default_rate
+                    # Clamp to reasonable range
+                    speed_multiplier = max(0.5, min(speed_multiplier, 1.8))
+                    
+                    print(f"💪 Adjusting speech speed: {rate_setting} WPM -> {speed_multiplier:.2f}x speed")
+                    
+                    # Change speed by adjusting frame rate
+                    # Higher frame rate = faster playback
+                    original_frame_rate = audio.frame_rate
+                    new_frame_rate = int(original_frame_rate * speed_multiplier)
+                    audio = audio._spawn(audio.raw_data, overrides={'frame_rate': new_frame_rate})
+                    # Convert back to original sample rate to maintain pitch
+                    audio = audio.set_frame_rate(original_frame_rate)
+                    
+                    print(f"✅ Speed adjusted: {original_frame_rate}Hz -> {new_frame_rate}Hz -> {original_frame_rate}Hz")
+                
+                # Adjust volume based on slider setting
+                # Convert volume (0.1-1.0) to decibels
+                # 0.85 (default) = 0dB, lower values = negative dB, higher = positive dB
+                if volume_setting != 0.85:  # Only adjust if different from default
+                    volume_db = 20 * (volume_setting - 0.85) / 0.75  # Scale to reasonable dB range
+                    audio = audio + volume_db
+                    print(f"🔊 Volume adjusted by {volume_db:.1f}dB (slider: {volume_setting:.2f})")
+                
                 audio.export(filename, format="wav")
                 os.unlink(temp_mp3)  # Remove temporary MP3
                 print(f"✅ Google TTS created: {filename}")
@@ -625,6 +806,7 @@ class MeditationGenerator:
                 import shutil
                 shutil.move(temp_mp3, filename)
                 print(f"✅ Google TTS created: {filename} (as MP3, pydub failed: {e})")
+                print(f"⚠️ Speed and volume adjustments not applied due to pydub failure")
             
             return True
             
@@ -635,16 +817,20 @@ class MeditationGenerator:
     
     def create_speech_pyttsx3(self, text, filename):
         """Create speech using local pyttsx3 engine"""
+        rate_setting = self.rate_var.get()
+        volume_setting = self.volume_var.get()
+        
         print(f"🎤 Using local TTS engine...")
+        print(f"🎛️ TTS Settings from sliders: Rate={rate_setting} WPM, Volume={volume_setting:.2f}")
         
         # Create a fresh TTS engine for each segment to avoid conflicts
         try:
             import pyttsx3
             fresh_engine = pyttsx3.init()
-            fresh_engine.setProperty('rate', self.rate_var.get())
-            fresh_engine.setProperty('volume', self.volume_var.get())
+            fresh_engine.setProperty('rate', rate_setting)
+            fresh_engine.setProperty('volume', volume_setting)
             
-            print(f"✅ Fresh TTS engine created")
+            print(f"✅ Fresh TTS engine created with Rate={rate_setting}, Volume={volume_setting:.2f}")
             
         except Exception as e:
             print(f"❌ Failed to create fresh TTS engine: {e}")
@@ -680,8 +866,9 @@ import os
 try:
     engine = pyttsx3.init()
 {voice_setup}
-    engine.setProperty('rate', {self.rate_var.get()})
-    engine.setProperty('volume', {self.volume_var.get()})
+    engine.setProperty('rate', {rate_setting})
+    engine.setProperty('volume', {volume_setting})
+    print(f"TTS Script: Rate={{rate_setting}}, Volume={{volume_setting}}")
     engine.save_to_file("""{escaped_text}""", "{normalized_filename}")
     engine.runAndWait()
     print("TTS_SUCCESS")
@@ -787,8 +974,8 @@ except Exception as e:
                     print("✅ Loaded background music with ffmpeg")
             except Exception as e:
                 print(f"❌ Failed to load background music: {e}")
-                print("💡 Try converting your background music to WAV format")
-                print("💡 Or install ffmpeg for MP3 support")
+                print("[EMOJI] Try converting your background music to WAV format")
+                print("[EMOJI] Or install ffmpeg for MP3 support")
                 return self.create_voice_only_file(audio_segments, final_filename)
             
             # Create the voice track by combining all segments
@@ -849,7 +1036,7 @@ except Exception as e:
             
         except ImportError:
             print("❌ pydub library required for creating final meditation file")
-            print("💡 Install with: pip install pydub")
+            print("[EMOJI] Install with: pip install pydub")
             return None
         except Exception as e:
             print(f"❌ Error creating final meditation file: {e}")
@@ -894,7 +1081,7 @@ except Exception as e:
             print(f"📁 File: {voice_filename}")
             print(f"📊 Size: {file_size:,} bytes")
             print(f"⏱️ Duration: {duration_minutes:.1f} minutes")
-            print("💡 To add background music, convert your music file to WAV format or install ffmpeg")
+            print("[EMOJI] To add background music, convert your music file to WAV format or install ffmpeg")
             
             return voice_filename
             
@@ -958,6 +1145,11 @@ except Exception as e:
         try:
             print(f"🎯 Starting meditation generation, is_playing: {self.is_playing}")
             
+            # Create output directory if it doesn't exist
+            output_dir = Path("output")
+            output_dir.mkdir(exist_ok=True)
+            print(f"📁 Output directory ready: {output_dir}")
+            
             # Parse meditation text
             segments = self.parse_meditation_text(meditation_text)
             
@@ -985,7 +1177,7 @@ except Exception as e:
                     self.status_label.config(text=progress_msg)
                     self.root.update()  # Force UI update
                     
-                    print(f"\n📝 Processing segment {current_text_segment}/{text_segment_count}")
+                    print(f"\n[TEXT] Processing segment {current_text_segment}/{text_segment_count}")
                     print(f"Text: {content[:60]}...")
                     
                     # Create audio file in current directory
@@ -1011,7 +1203,7 @@ except Exception as e:
                         # Create silent audio as fallback
                         self._create_silent_audio(audio_filename, duration=len(content.split()) * 0.5)
                         audio_files.append(('audio', audio_filename))
-                        self.temp_audio_files.append(audio_filename)
+                        self.generated_audio_files.append(audio_filename)
                         
                 elif segment_type == 'pause':
                     print(f"⏸ Adding {content} second pause")
